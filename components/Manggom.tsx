@@ -1,7 +1,7 @@
 import { motion, useMotionValue, useSpring } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
 
-export default function Manggom({ season }: { season: 'winter' | 'spring' }) {
+export default function Manggom({ season }: { season: 'spring' | 'summer' }) {
   const [isPetting, setIsPetting] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -106,12 +106,12 @@ export default function Manggom({ season }: { season: 'winter' | 'spring' }) {
         <motion.g 
           filter="url(#scruffy)"
           animate={{ 
-            x: season === 'winter' && !isPetting ? [-1.5, 1.5, -1.5, 1.5, 0] : 0,
-            y: season === 'winter' && !isPetting ? [-1, 1, -1, 1, 0] : 0,
+            x: season === 'spring' && !isPetting ? [-1.5, 1.5, -1.5, 1.5, 0] : 0,
+            y: season === 'spring' && !isPetting ? [-1, 1, -1, 1, 0] : 0,
           }}
           transition={{ 
-            x: { repeat: season === 'winter' && !isPetting ? Infinity : 0, duration: 0.2, ease: "linear" },
-            y: { repeat: season === 'winter' && !isPetting ? Infinity : 0, duration: 0.2, ease: "linear" }
+            x: { repeat: season === 'spring' && !isPetting ? Infinity : 0, duration: 0.2, ease: "linear" },
+            y: { repeat: season === 'spring' && !isPetting ? Infinity : 0, duration: 0.2, ease: "linear" }
           }}
         >
           {/* Ears */}
@@ -202,8 +202,16 @@ export default function Manggom({ season }: { season: 'winter' | 'spring' }) {
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
           />
 
-          {/* Eyes */}
-          {isPetting ? (
+          {/* Eyes & Sunglasses */}
+          {season === 'summer' && !isPetting && (
+            <motion.g animate={{ y: poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
+              <path d="M 230 260 L 370 260 L 360 280 L 310 280 L 300 270 L 290 280 L 240 280 Z" fill="#FF4444" stroke={colors.outline} strokeWidth="6" strokeLinejoin="round" />
+              <path d="M 240 260 L 250 275 L 280 275" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="3" />
+              <path d="M 360 260 L 350 275 L 320 275" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="3" />
+            </motion.g>
+          )}
+          
+          {season !== 'summer' && (isPetting ? (
             <>
               <motion.path d="M 252 263 A 12 12 0 0 1 276 263" fill="none" stroke={colors.outline} strokeWidth="6" strokeLinecap="round" animate={{ y: poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }} />
               <motion.path d="M 324 263 A 12 12 0 0 1 348 263" fill="none" stroke={colors.outline} strokeWidth="6" strokeLinecap="round" animate={{ y: poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }} />
@@ -213,15 +221,15 @@ export default function Manggom({ season }: { season: 'winter' | 'spring' }) {
               <motion.circle cx="264" r="8" fill={colors.outline} style={{ x: smoothEyeX, y: smoothEyeY }} animate={{ cy: 269 + poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }} />
               <motion.circle cx="336" r="8" fill={colors.outline} style={{ x: smoothEyeX, y: smoothEyeY }} animate={{ cy: 269 + poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }} />
             </>
-          )}
+          ))}
 
           {/* Mouth */}
-          {season === 'winter' && !isPetting ? (
+          {season === 'spring' && !isPetting ? (
             <motion.path 
               d="M 288 303 L 300 293 L 312 303" fill="none" stroke={colors.outline} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"
               animate={{ y: poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }}
             />
-          ) : season === 'spring' && !isPetting ? (
+          ) : season === 'summer' && !isPetting ? (
             <motion.path 
               d="M 288 292 L 288 305 C 288 320, 312 320, 312 305 L 312 292 Z" fill="#FF6B6B" stroke={colors.outline} strokeWidth="6" strokeLinejoin="round"
               animate={{ y: poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -233,36 +241,22 @@ export default function Manggom({ season }: { season: 'winter' | 'spring' }) {
             />
           )}
 
-          {/* Winter Expressions (Eyebrows & Snot) */}
-          {season === 'winter' && !isPetting && (
+          {/* Spring Expressions (Eyebrows & Sweat - instead of snot) */}
+          {season === 'spring' && !isPetting && (
             <>
               <motion.path d="M 245 239 L 272 251" stroke={colors.outline} strokeWidth="6" strokeLinecap="round" animate={{ y: poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }} />
               <motion.path d="M 355 239 L 328 251" stroke={colors.outline} strokeWidth="6" strokeLinecap="round" animate={{ y: poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }} />
-              
-              {/* Snot Bubble */}
-              <motion.g animate={{ y: poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }}>
-                <motion.circle
-                  cx="308" cy="287" r="10" fill="rgba(100, 210, 255, 0.7)" stroke={colors.outline} strokeWidth="3"
-                  animate={{ r: [10, 14, 10], x: [-1.5, 1.5, -1.5] }}
-                  transition={{ 
-                    r: { repeat: Infinity, duration: 1.5, ease: "easeInOut" },
-                    x: { repeat: Infinity, duration: 0.2, ease: "linear" }
-                  }}
-                />
-                <motion.circle
-                  cx="305" cy="284" r="2.5" fill="rgba(255, 255, 255, 0.8)"
-                  animate={{ x: [-1.5, 1.5, -1.5] }}
-                  transition={{ repeat: Infinity, duration: 0.2, ease: "linear" }}
-                />
-              </motion.g>
             </>
           )}
 
-          {/* Spring Expressions (Eyebrows) */}
-          {season === 'spring' && !isPetting && (
+          {/* Summer Expressions (Eyebrows + Sweat) */}
+          {season === 'summer' && !isPetting && (
             <>
               <motion.path d="M 250 230 L 265 240" stroke={colors.outline} strokeWidth="6" strokeLinecap="round" animate={{ y: poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }} />
               <motion.path d="M 350 230 L 335 240" stroke={colors.outline} strokeWidth="6" strokeLinecap="round" animate={{ y: poyong }} transition={{ type: "spring", stiffness: 300, damping: 20 }} />
+              {/* Sweat drop */ }
+              <motion.path d="M 370 260 Q 380 280 370 290 Q 360 280 370 260 Z" fill="#93C5FD" stroke={colors.outline} strokeWidth="3" 
+                animate={{ y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1 }} />
             </>
           )}
         </motion.g>
@@ -270,15 +264,15 @@ export default function Manggom({ season }: { season: 'winter' | 'spring' }) {
         {/* Hats */}
         <motion.g
           animate={{ 
-            y: season === 'winter' && !isPetting ? [-1, 1, -1, 1, 0] : 0,
-            x: season === 'winter' && !isPetting ? [-1.5, 1.5, -1.5, 1.5, 0] : 0,
+            y: season === 'spring' && !isPetting ? [-1, 1, -1, 1, 0] : 0,
+            x: season === 'spring' && !isPetting ? [-1.5, 1.5, -1.5, 1.5, 0] : 0,
           }}
           transition={{ 
-            y: { repeat: season === 'winter' && !isPetting ? Infinity : 0, duration: 0.2, ease: "linear" },
-            x: { repeat: season === 'winter' && !isPetting ? Infinity : 0, duration: 0.2, ease: "linear" }
+            y: { repeat: season === 'spring' && !isPetting ? Infinity : 0, duration: 0.2, ease: "linear" },
+            x: { repeat: season === 'spring' && !isPetting ? Infinity : 0, duration: 0.2, ease: "linear" }
           }}
         >
-          {season === 'spring' && (
+          {season === 'summer' && (
             <g transform="translate(300, 135)">
               <motion.g 
                 animate={{ 
@@ -290,21 +284,20 @@ export default function Manggom({ season }: { season: 'winter' | 'spring' }) {
                   rotate: { repeat: Infinity, duration: isPetting ? 0.5 : 2, ease: "easeInOut" }
                 }}
               >
-                <path d="M -30 10 L 30 10 L 0 -55 Z" fill="#93C5FD" stroke={colors.outline} strokeWidth="5" strokeLinejoin="round" />
-                <rect x="-35" y="0" width="70" height="18" rx="9" fill="white" stroke={colors.outline} strokeWidth="5" />
-                <circle cx="0" cy="-55" r="12" fill="white" stroke={colors.outline} strokeWidth="5" />
+                {/* Sprout replaces Spring sprout for Summer? Let's give sunglasses instead of a hat */}
               </motion.g>
             </g>
           )}
-          {season === 'winter' && (
+          {season === 'spring' && (
             <g transform="translate(300, 135)">
               <motion.g 
                 animate={{ y: poyong * 2.2 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                <path d="M -35 15 C -20 -45, 40 -50, 60 -10 C 65 0, 50 10, 50 10 Z" fill="#EF4444" stroke={colors.outline} strokeWidth="5" strokeLinejoin="round" />
-                <rect x="-45" y="10" width="90" height="22" rx="11" fill="white" stroke={colors.outline} strokeWidth="5" />
-                <circle cx="55" cy="-8" r="14" fill="white" stroke={colors.outline} strokeWidth="5" />
+                {/* Sprout */}
+                <path d="M -30 10 L 30 10 L 0 -55 Z" fill="#32CD32" stroke={colors.outline} strokeWidth="5" strokeLinejoin="round" />
+                <rect x="-35" y="0" width="70" height="18" rx="9" fill="white" stroke={colors.outline} strokeWidth="5" />
+                <circle cx="0" cy="-55" r="12" fill="white" stroke={colors.outline} strokeWidth="5" />
               </motion.g>
             </g>
           )}

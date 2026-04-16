@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-export default function Particles({ season }: { season: 'winter' | 'spring' }) {
+export default function Particles({ season }: { season: 'spring' | 'summer' }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -11,7 +11,7 @@ export default function Particles({ season }: { season: 'winter' | 'spring' }) {
 
     let animationFrameId: number;
     let particles: any[] = [];
-    const numParticles = season === 'winter' ? 150 : 80;
+    const numParticles = season === 'spring' ? 120 : 60;
 
     let mouseX = -1000;
     let mouseY = -1000;
@@ -45,9 +45,9 @@ export default function Particles({ season }: { season: 'winter' | 'spring' }) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        size: season === 'winter' ? 2 + Math.random() * 4 : 6 + Math.random() * 8,
+        size: season === 'spring' ? 6 + Math.random() * 8 : Math.random() * 6 + 3,
         vx: (Math.random() - 0.5) * 2,
-        vy: season === 'winter' ? 0.5 + Math.random() * 1.5 : 1 + Math.random() * 2,
+        vy: season === 'spring' ? 1 + Math.random() * 2 : -2 - Math.random() * 2, // Summer particles float up instead
         angle: Math.random() * Math.PI * 2,
         rotation: (Math.random() - 0.5) * 0.1,
         hueShift: Math.random() * 20,
@@ -63,17 +63,19 @@ export default function Particles({ season }: { season: 'winter' | 'spring' }) {
       mouseVelX *= 0.9;
       mouseVelY *= 0.9;
 
-      ctx.shadowBlur = season === 'winter' ? 4 : 8;
-      ctx.shadowColor = season === 'winter' ? "#ffffff" : "#ffb7c5";
+      ctx.shadowBlur = season === 'spring' ? 8 : 4;
+      ctx.shadowColor = season === 'spring' ? "#ffb7c5" : "#a2e4f0";
 
       particles.forEach((p) => {
         p.y += p.vy;
         p.x += p.vx;
 
-        if (season === 'winter') {
-          p.x += Math.sin(frame * 0.03 + p.driftSeed) * 0.6;
-        } else {
+        if (season === 'spring') {
+          p.x += Math.sin(frame * 0.03 + p.driftSeed) * 1.5;
           p.angle += p.rotation;
+        } else {
+          // Summer bubbles wiggle slightly upwards
+          p.x += Math.sin(frame * 0.05 + p.driftSeed) * 0.8;
         }
 
         const dx = p.x - mouseX;
@@ -87,28 +89,27 @@ export default function Particles({ season }: { season: 'winter' | 'spring' }) {
         }
 
         p.vx *= 0.98;
-        p.vy = Math.max(season === 'winter' ? 0.5 : 1, p.vy * 0.99 + 0.05);
-
-        if (p.y > canvas.height + 20) {
-          p.y = -20;
-          p.x = Math.random() * canvas.width;
+        if (season === 'spring') {
+            p.vy = Math.max(1, p.vy * 0.99 + 0.05);
+            if (p.y > canvas.height + 20) {
+              p.y = -20;
+              p.x = Math.random() * canvas.width;
+            }
+        } else {
+            p.vy = Math.min(-0.5, p.vy * 0.99 - 0.05);
+            if (p.y < -20) {
+              p.y = canvas.height + 20;
+              p.x = Math.random() * canvas.width;
+            }
         }
+        
         if (p.x < -20) p.x = canvas.width + 20;
         if (p.x > canvas.width + 20) p.x = -20;
 
         ctx.save();
         ctx.translate(p.x, p.y);
 
-        if (season === 'winter') {
-          const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, p.size);
-          grad.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
-          grad.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
-          grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-          ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.arc(0, 0, p.size, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
+        if (season === 'spring') {
           ctx.rotate(p.angle);
           ctx.fillStyle = `hsl(${340 + p.hueShift}, 100%, 85%)`;
 
@@ -124,6 +125,21 @@ export default function Particles({ season }: { season: 'winter' | 'spring' }) {
           ctx.moveTo(0, -p.size);
           ctx.lineTo(0, p.size);
           ctx.stroke();
+        } else {
+          // Summer Bubbles
+          ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+          ctx.lineWidth = Math.max(1, p.size * 0.1);
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          
+          // Bubble Highlight
+          ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+          ctx.beginPath();
+          ctx.arc(-p.size * 0.3, -p.size * 0.3, p.size * 0.2, 0, Math.PI * 2);
+          ctx.fill();
         }
         ctx.restore();
       });

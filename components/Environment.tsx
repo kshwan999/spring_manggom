@@ -39,14 +39,14 @@ class Tree {
     this.canopyColor = `rgba(255, 183, 197, ${0.2 + 0.15 * scale})`;
   }
 
-  draw(ctx: CanvasRenderingContext2D, state: 'winter' | 'spring') {
+  draw(ctx: CanvasRenderingContext2D, state: 'spring' | 'summer') {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.scale(this.scale * this.thicknessVar, this.scale * this.heightVar);
     
-    const trunkColor = state === 'winter' 
-      ? `rgba(25, 25, 40, ${0.6 + 0.3 * this.scale})` 
-      : `rgba(110, 75, 50, ${0.8 + 0.2 * this.scale})`; // Warm brown for spring
+    const trunkColor = state === 'spring' 
+      ? `rgba(110, 75, 50, ${0.8 + 0.2 * this.scale})` 
+      : `rgba(90, 60, 40, ${0.8 + 0.2 * this.scale})`; // Darker brown for summer
       
     ctx.fillStyle = trunkColor;
     ctx.beginPath();
@@ -70,8 +70,10 @@ class Tree {
         ctx.stroke();
     });
 
-    if (state === 'spring') {
-        const canopyColor = `rgba(255, 170, 190, ${0.7 + 0.3 * this.scale})`; // Brighter, more opaque pink for day
+    if (state === 'spring' || state === 'summer') {
+        const canopyColor = state === 'spring'
+          ? `rgba(255, 170, 190, ${0.7 + 0.3 * this.scale})` // Pink for spring
+          : `rgba(50, 200, 100, ${0.8 + 0.2 * this.scale})`; // Green for summer
         ctx.fillStyle = canopyColor;
         for (let i = 0; i < 16; i++) {
             const ang = (i / 16) * Math.PI * 2;
@@ -89,7 +91,7 @@ class Tree {
   }
 }
 
-export default function Environment({ season }: { season: 'winter' | 'spring' }) {
+export default function Environment({ season }: { season: 'spring' | 'summer' }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -169,24 +171,24 @@ export default function Environment({ season }: { season: 'winter' | 'spring' })
 
       // 1. Background Gradient
       const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width);
-      if (season === 'winter') {
-        bgGrad.addColorStop(0, '#0c1c38');
-        bgGrad.addColorStop(1, '#020817');
-      } else {
+      if (season === 'spring') {
         bgGrad.addColorStop(0, '#FFF5E1'); // Warm sun center
-        bgGrad.addColorStop(1, '#A0D8EF'); // Sky blue edges
+        bgGrad.addColorStop(1, '#ffcce6'); // Pinkish sky edges
+      } else {
+        bgGrad.addColorStop(0, '#E0F7FA'); // Bright summer center
+        bgGrad.addColorStop(1, '#0288D1'); // Deep summer sky
       }
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, width, height);
 
-      // 2. Ambient Stars (Only in winter)
-      if (season === 'winter') {
+      // 2. Ambient Stars (Removed for spring/summer, but keeping block structure empty)
+      if (season === 'summer') {
         stars.forEach((s) => {
-          s.blink += 0.03;
+          s.blink += 0.05;
           const alpha = (Math.sin(s.blink) + 1) / 2;
-          ctx.fillStyle = `rgba(255, 255, 230, ${alpha * 0.6})`;
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.4})`; // Light glare
           ctx.beginPath();
-          ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+          ctx.arc(s.x, s.y, s.size * 2, 0, Math.PI * 2);
           ctx.fill();
         });
       }
@@ -195,19 +197,12 @@ export default function Environment({ season }: { season: 'winter' | 'spring' })
       const mx = width - 120;
       const my = 100;
       ctx.save();
-      ctx.shadowBlur = season === 'winter' ? 40 : 60;
-      ctx.shadowColor = season === 'winter' ? "rgba(200, 230, 255, 0.5)" : "rgba(255, 220, 100, 0.8)";
-      ctx.fillStyle = season === 'winter' ? "#f0f8ff" : "#FFD700";
+      ctx.shadowBlur = season === 'spring' ? 60 : 100;
+      ctx.shadowColor = season === 'spring' ? "rgba(255, 220, 100, 0.8)" : "rgba(255, 255, 200, 1)";
+      ctx.fillStyle = season === 'spring' ? "#FFD700" : "#FFF7D6";
       ctx.beginPath();
-      ctx.arc(mx, my, season === 'winter' ? 40 : 50, 0, Math.PI * 2);
+      ctx.arc(mx, my, season === 'spring' ? 50 : 60, 0, Math.PI * 2);
       ctx.fill();
-      
-      if (season === 'winter') {
-        ctx.globalCompositeOperation = "destination-out";
-        ctx.beginPath();
-        ctx.arc(mx - 15, my - 10, 40, 0, Math.PI * 2);
-        ctx.fill();
-      }
       ctx.restore();
 
       // 4. Back Orbs (Warm flares in spring)
@@ -221,7 +216,7 @@ export default function Environment({ season }: { season: 'winter' | 'spring' })
 
         const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.size);
         const pulse = Math.sin(frame * 0.02 + o.size) * 0.02;
-        const orbColor = season === 'winter' ? `rgba(200, 230, 255, ${o.opacity + pulse})` : `rgba(255, 240, 200, ${(o.opacity + pulse) * 1.5})`;
+        const orbColor = season === 'spring' ? `rgba(255, 200, 220, ${(o.opacity + pulse) * 1.5})` : `rgba(255, 255, 255, ${(o.opacity + pulse) * 2})`;
         g.addColorStop(0, orbColor);
         g.addColorStop(1, "rgba(255, 255, 255, 0)");
         ctx.fillStyle = g;
@@ -232,7 +227,7 @@ export default function Environment({ season }: { season: 'winter' | 'spring' })
 
       // 5. Perspective Path (Road)
       const vPointY = height * 0.4;
-      const roadColor = season === 'winter' ? "rgba(10, 20, 40, 0.9)" : "rgba(240, 230, 210, 0.8)"; // Warm dirt/path
+      const roadColor = season === 'spring' ? "rgba(240, 230, 210, 0.8)" : "rgba(255, 248, 220, 0.9)"; // Sand for summer
       
       // Draw the main road polygon
       ctx.fillStyle = roadColor;
@@ -244,7 +239,7 @@ export default function Environment({ season }: { season: 'winter' | 'spring' })
       ctx.fill();
 
       // Road side glow / borders
-      ctx.strokeStyle = season === 'winter' ? "rgba(180, 220, 255, 0.25)" : "rgba(255, 200, 150, 0.4)";
+      ctx.strokeStyle = season === 'spring' ? "rgba(255, 200, 150, 0.4)" : "rgba(150, 230, 255, 0.4)"; // Ocean blue edges for summer
       ctx.lineWidth = 4;
       ctx.beginPath();
       ctx.moveTo(width / 2 - 50, vPointY);
@@ -265,11 +260,11 @@ export default function Environment({ season }: { season: 'winter' | 'spring' })
       // Add a subtle gradient to the bottom to give it some depth, but keep it the same base color
       const gGrad = ctx.createLinearGradient(0, height - 200, 0, height);
       if (season === 'spring') {
-        gGrad.addColorStop(0, "rgba(240, 230, 210, 0)"); // Transparent at top
-        gGrad.addColorStop(1, "rgba(220, 210, 190, 0.8)"); // Slightly darker dirt at bottom
+        gGrad.addColorStop(0, "rgba(240, 230, 210, 0)"); 
+        gGrad.addColorStop(1, "rgba(220, 210, 190, 0.8)"); 
       } else {
-        gGrad.addColorStop(0, "rgba(10, 20, 40, 0)");
-        gGrad.addColorStop(1, "rgba(5, 10, 20, 0.8)");
+        gGrad.addColorStop(0, "rgba(255, 248, 220, 0)"); 
+        gGrad.addColorStop(1, "rgba(220, 200, 160, 0.9)"); // Deeper sand at bottom
       }
       ctx.fillStyle = gGrad;
       ctx.fillRect(0, height - 200, width, 200);
